@@ -1,0 +1,107 @@
+personaje = '🐙'
+cajas = '🐚'
+meta = '🦐'
+paredes = '🐋'
+espacio_piso = '  '
+
+# Definimos los mapas de los niveles
+mapas_niveles = [
+    [
+        [paredes, paredes, paredes, paredes, paredes, paredes, paredes],
+        [paredes, espacio_piso, espacio_piso, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, espacio_piso, personaje, espacio_piso, meta, espacio_piso, paredes],
+        [paredes, espacio_piso, cajas, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, espacio_piso, espacio_piso, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, espacio_piso, espacio_piso, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, paredes, paredes, paredes, paredes, paredes, paredes],
+    ],
+    [
+        [paredes, paredes, paredes, paredes, paredes, paredes, paredes],
+        [paredes, espacio_piso, espacio_piso, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, espacio_piso, personaje, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, espacio_piso, cajas, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, meta, espacio_piso, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, meta, espacio_piso, espacio_piso, espacio_piso, espacio_piso, paredes],
+        [paredes, paredes, paredes, paredes, paredes, paredes, paredes],
+        # ...
+    ],
+    # Define más niveles aquí si es necesario
+]
+
+def imprimir_mapa(mapa):
+    for fila in mapa:
+        print("".join(fila))
+
+def mover_personaje(mapa, direccion):
+    global posicion_personaje, posicion_caja
+    
+    nueva_posicion = list(posicion_personaje)
+    nueva_posicion_caja = list(posicion_caja)
+
+    if direccion == 'w':
+        nueva_posicion[0] -= 1
+        nueva_posicion_caja[0] -= 1
+    elif direccion == 's':
+        nueva_posicion[0] += 1
+        nueva_posicion_caja[0] += 1
+    elif direccion == 'a':
+        nueva_posicion[1] -= 1
+        nueva_posicion_caja[1] -= 1
+    elif direccion == 'd':
+        nueva_posicion[1] += 1
+        nueva_posicion_caja[1] += 1
+
+    # Verificamos si la nueva posición está dentro de los límites del mapa
+    if 0 <= nueva_posicion[0] < len(mapa) and 0 <= nueva_posicion[1] < len(mapa[0]):
+        # Verificamos si la nueva posición no es una pared (valor 3)
+        if mapa[nueva_posicion[0]][nueva_posicion[1]] != paredes:
+            # Si hay una caja en la nueva posición, intentamos mover la caja
+            if mapa[nueva_posicion[0]][nueva_posicion[1]] == cajas:
+                # Verificamos si el espacio después de la caja está vacío y dentro de los límites del mapa
+                if (0 <= nueva_posicion_caja[0] < len(mapa)) and (0 <= nueva_posicion_caja[1] < len(mapa[0])) and (mapa[nueva_posicion_caja[0]][nueva_posicion_caja[1]] != paredes):
+                    # Movemos al personaje y la caja
+                    mapa[posicion_caja[0]][posicion_caja[1]] = meta
+                    mapa[nueva_posicion_caja[0]][nueva_posicion_caja[1]] = cajas
+                    mapa[posicion_personaje[0]][posicion_personaje[1]] = espacio_piso
+                    mapa[nueva_posicion[0]][nueva_posicion[1]] = personaje
+                    # Actualizamos la posición del personaje y de la caja
+                    posicion_caja = nueva_posicion_caja
+                    posicion_personaje = nueva_posicion
+                else:
+                    print("No puedes mover la caja.")
+            else:
+                # Movemos al personaje
+                mapa[posicion_personaje[0]][posicion_personaje[1]] = espacio_piso
+                mapa[nueva_posicion[0]][nueva_posicion[1]] = personaje
+                # Actualizamos la posición del personaje
+                posicion_personaje = nueva_posicion
+        else:
+            print("No puedes moverte a través de una pared.")
+    else:
+        print("No puedes moverte fuera del mapa.")
+
+# Bucle principal
+nivel_actual = 0
+posicion_personaje = [2, 2]  # Posición inicial del personaje
+posicion_caja = [3, 2]  # Posición inicial de la caja
+while nivel_actual < len(mapas_niveles):
+    mapa_actual = mapas_niveles[nivel_actual]
+    imprimir_mapa(mapa_actual)
+    
+    # Verificamos si el jugador ha completado el nivel
+    if all(caja != cajas for fila in mapa_actual for caja in fila):
+        print("¡Nivel completado!")
+        opcion_continuar = input("Presiona 'c' para continuar al siguiente nivel, o 'salir' para terminar: ")
+        if opcion_continuar.lower() == 'salir':
+            break
+        else:
+            nivel_actual += 1
+            posicion_personaje = [index for index, row in enumerate(mapa_actual) if personaje in row][0]
+            posicion_caja = [index for index, row in enumerate(mapa_actual) if cajas in row][0]
+            continue
+    
+    movimiento = input("Introduce la dirección en la que quieres mover al personaje (arriba/abajo/izquierda/derecha), o 'salir' para terminar: ")
+    if movimiento.lower() == 'salir':
+        break
+    else:
+        mover_personaje(mapa_actual, movimiento)
